@@ -17,6 +17,7 @@ class Client(object):
 
     def __init__(self, args, id, train_samples, test_samples, **kwargs):
         self.model = copy.deepcopy(args.model)
+        self.mom_model = copy.deepcopy(args.model)
         self.dataset = args.dataset
         self.device = args.device
         self.id = id  # integer
@@ -65,7 +66,11 @@ class Client(object):
             batch_size = self.batch_size
         test_data = read_client_data(self.dataset, self.id, is_train=False)
         return DataLoader(test_data, batch_size, drop_last=False, shuffle=False)
-        
+
+    def set_mom_parameters(self, model):
+        for new_param, old_param in zip(model.parameters(), self.mom_model.parameters()):
+            old_param.data = new_param.data.clone()
+
     def set_parameters(self, model):
         for new_param, old_param in zip(model.parameters(), self.model.parameters()):
             old_param.data = new_param.data.clone()

@@ -20,6 +20,7 @@ class Server(object):
         self.batch_size = args.batch_size
         self.learning_rate = args.local_learning_rate
         self.global_model = copy.deepcopy(args.model)
+        self.mom_model = copy.deepcopy(args.model)
         self.num_clients = args.num_clients
         self.join_ratio = args.join_ratio
         self.random_join_ratio = args.random_join_ratio
@@ -100,6 +101,12 @@ class Server(object):
             client.send_time_cost['num_rounds'] += 1
             client.send_time_cost['total_cost'] += 2 * (time.time() - start_time)
 
+    def send_mom_model(self):
+        assert (len(self.clients) > 0)
+
+        for client in self.clients:
+            client.set_mom_parameters(self.mom_model)
+
     def receive_models(self):
         assert (len(self.selected_clients) > 0)
 
@@ -137,6 +144,10 @@ class Server(object):
     def add_parameters(self, w, client_model):
         for server_param, client_param in zip(self.global_model.parameters(), client_model.parameters()):
             server_param.data += client_param.data.clone() * w
+
+    def update_mom_model(self):
+        for mom_param, param in zip(self.mom_model.parameters(), self.global_model.parameters()):
+            mom_param.data = 0.995 * mom_param.data.clone() + (1 - 0.995) * param.data.clone()
 
     def save_global_model(self):
         model_path = os.path.join("models", self.dataset)
