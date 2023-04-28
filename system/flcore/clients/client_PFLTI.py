@@ -65,13 +65,15 @@ class clientPFLTI(Client):
                 loss.backward()
                 self.optimizer_global.step()
 
+                # Apply dropout
+                self.dropout_eval(self.model)
+
                 # Update momentum model params
                 self.optimizer_mom.zero_grad()
                 output = self.mom_model(x)
                 loss_mom = self.loss(output, y)
                 loss_mom.backward()
                 self.optimizer_mom.step()
-
 
                 # step 2
                 if type(X) == type([]):
@@ -104,6 +106,17 @@ class clientPFLTI(Client):
 
         self.train_time_cost['num_rounds'] += 1
         self.train_time_cost['total_cost'] += time.time() - start_time
+
+    def dropout_eval(self, m):
+        def _is_leaf(model):
+            return len(list(model.children())) == 0
+
+        if hasattr(m, 'dropout'):
+            m.dropout.eval()
+
+        for child in m.children():
+            if not _is_leaf(child):
+                self.dropout_eval(child)
 
     def KL_div(self, student_output, teacher_output, temp):
         p_s = F.log_softmax(student_output / temp, dim=1)
