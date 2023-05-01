@@ -220,7 +220,7 @@ class PFLTI_CNN(nn.Module):
                       stride=1,
                       bias=True),
             nn.ReLU(inplace=True),
-            nn.Dropout(drop_out),
+            # nn.Dropout(drop_out),
             nn.MaxPool2d(kernel_size=(2, 2))
         )
         self.conv2 = nn.Sequential(
@@ -238,9 +238,11 @@ class PFLTI_CNN(nn.Module):
             nn.ReLU(inplace=True)
         )
         self.fc = nn.Linear(512, num_classes)
+        self.dropout1 = nn.Dropout(drop_out)
 
     def forward(self, x):
         out = self.conv1(x)
+        out = self.dropout1(out)
         out = self.conv2(out)
         out = torch.flatten(out, 1)
         out = self.fc1(out)
