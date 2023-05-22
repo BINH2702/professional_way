@@ -21,8 +21,6 @@ class PFLTI(Server):
             self.send_models()
             # send mom_modl tp client
             self.send_mom_model()
-            # set parameter to self.global
-            #
 
             if i % self.eval_gap == 0:
                 print(f"\n-------------Round number: {i}-------------")

@@ -35,7 +35,9 @@ class clientPFLTI(Client):
 
         # self.model.to(self.device)
         self.model.train()
+        self.dropout_eval(self.model)
         self.mom_model.train()
+        self.dropout_eval(self.mom_model)
 
         max_local_steps = self.local_steps
         if self.train_slow:
@@ -66,7 +68,9 @@ class clientPFLTI(Client):
                 self.optimizer_global.step()
 
                 # Apply dropout
-                self.dropout_eval(self.model)
+                # After training then dropout
+                self.model.train()
+                # self.mom_model.train()
 
                 # Update momentum model params
                 self.optimizer_mom.zero_grad()

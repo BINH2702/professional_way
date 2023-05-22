@@ -211,7 +211,7 @@ class AmazonMLP(nn.Module):
 class PFLTI_CNN(nn.Module):
     def __init__(self, in_features=1,num_classes=10, dim=1024, drop_out=0.2):
         super().__init__()
-        # self.drop_out = drop_out
+        self.drop_out = drop_out
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_features,
                       32,
@@ -231,19 +231,22 @@ class PFLTI_CNN(nn.Module):
                       stride=1,
                       bias=True),
             nn.ReLU(inplace=True),
+            # nn.Dropout(drop_out),
             nn.MaxPool2d(kernel_size=(2, 2))
         )
         self.fc1 = nn.Sequential(
             nn.Linear(dim, 512),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
+            # nn.Dropout(drop_out)
         )
         self.fc = nn.Linear(512, num_classes)
-        self.dropout1 = nn.Dropout(drop_out)
+        # self.Dropout(drop_out)
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.dropout1(out)
         out = self.conv2(out)
+        out = self.dropout1(out)
         out = torch.flatten(out, 1)
         out = self.fc1(out)
         out = self.fc(out)
